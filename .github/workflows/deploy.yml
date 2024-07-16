@@ -3,7 +3,7 @@ name: Deploy Node.js app to AWS Lightsail
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
