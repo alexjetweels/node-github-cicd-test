@@ -21,11 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Start SSH agent and add private key
-        run: |
-          eval "$(ssh-agent -s)"
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-
       - name: Deploy to Lightsail
         env:
           SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
