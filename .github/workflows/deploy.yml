@@ -1,0 +1,33 @@
+name: Deploy Node.js app to AWS Lightsail
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy to Lightsail
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.LIGHTSAIL_IP }} >> ~/.ssh/known_hosts
+          rsync -avz --exclude '.git' --exclude 'node_modules' . ubuntu@${{ secrets.LIGHTSAIL_IP }}:/home/ubuntu/app
+          ssh ubuntu@${{ secrets.LIGHTSAIL_IP }} "cd /home/ubuntu/app && npm install && pm2 restart all || pm2 start server.js"
